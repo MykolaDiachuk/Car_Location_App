@@ -113,6 +113,5 @@ def run() -> None:
         cap.release()
         cv2.destroyAllWindows()
 
-#test
 if __name__ == "__main__":
     run()

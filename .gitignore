@@ -16,3 +16,17 @@ ENV/
 
 # YOLO weights
 *.pt
+
+# Claude Code context — kept locally, not part of the public repo
+CLAUDE.md
+agent_notes/
+
+# Local SQLite history (created by docker compose bind-mount)
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Standalone monitor screenshots
+output/

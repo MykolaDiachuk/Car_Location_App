@@ -1,0 +1,18 @@
+# Quickstart: docker compose up
+#
+# Required: .env in this directory with CAMERA_URL set.
+# Data: SQLite history persists in ./data/ on the host.
+# Logs: docker compose logs -f
+# Stop: docker compose down
+
+services:
+  parking-monitor:
+    build: .
+    container_name: parking-monitor
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
