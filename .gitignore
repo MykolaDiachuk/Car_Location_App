@@ -19,6 +19,7 @@ ENV/
 
 # Claude Code context — kept locally, not part of the public repo
 #CLAUDE.md
+.claude/
 agent_notes/
 
 # Local SQLite history (created by docker compose bind-mount)
