@@ -13,6 +13,11 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      # Pin the in-container DB path to the bind-mount at /data so history
+      # persists across redeploys. Overrides the project-relative default
+      # used for bare-metal deployments.
+      DB_PATH: /data/parking_history.db
     volumes:
       - ./data:/data
     restart: unless-stopped

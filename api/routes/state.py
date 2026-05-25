@@ -22,8 +22,8 @@ def get_state(request: Request) -> StateResponse:
     """Return the latest parking snapshot.
 
     Returns 503 only on cold start (no snapshot yet); after that the latest
-    cached state is always returned with ``stale`` and ``age_seconds`` so the
-    frontend can decide how to render staleness.
+    cached state is always returned with ``stale`` so the frontend can
+    decide how to render staleness.
     """
     store: StateStore = request.app.state.store
     settings: Settings = request.app.state.settings

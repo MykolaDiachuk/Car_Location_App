@@ -153,6 +153,38 @@
     .status-bar .ok { color: #30d060; }
     .status-bar .err { color: #f04040; }
 
+    /* ── Health banner ── */
+    .banner {
+      max-width: 1400px;
+      margin: 0 auto 1rem;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: none;
+    }
+
+    .banner.show { display: block; }
+    .banner.error {
+      background: #3a1518;
+      border: 1px solid #7a2a30;
+      color: #ffb0b0;
+    }
+    .banner.warn {
+      background: #3a2e10;
+      border: 1px solid #7a5a20;
+      color: #ffd080;
+    }
+
+    .banner strong { display: block; margin-bottom: 0.2rem; }
+    .banner code {
+      background: rgba(0,0,0,0.3);
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.8rem;
+    }
+
     /* ── Uptime display ── */
     .uptime {
       font-size: 1rem;
@@ -165,6 +197,8 @@
 </head>
 <body>
   <h1>Server Monitor — <span class="server-name" id="hostname">...</span></h1>
+
+  <div class="banner" id="health-banner" role="alert"></div>
 
   <div class="dashboard">
     <!-- Server info -->

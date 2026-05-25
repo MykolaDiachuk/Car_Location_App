@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Parking Configurator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Parking Configurator</div>
+    <div class="topbar-actions">
+      <span id="resume-banner" class="resume-banner hidden">
+        Відновлено попередню сесію.
+        <button type="button" id="start-fresh-btn">Почати з нуля</button>
+      </span>
+      <button type="button" id="reset-btn" class="ghost">Скинути все</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <nav class="sidebar" aria-label="Кроки налаштування">
+      <ol class="steps">
+        <li><button type="button" class="step" data-page="camera" data-step="camera">
+          <span class="step-num">1</span>
+          <span class="step-label">Камера</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+        <li><button type="button" class="step" data-page="bev" data-step="bev">
+          <span class="step-num">2</span>
+          <span class="step-label">BEV калібрування</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+        <li class="group-label">Маски та карта (можна паралельно)</li>
+        <li><button type="button" class="step indent" data-page="mask-parking" data-step="mask-parking">
+          <span class="step-num">3a</span>
+          <span class="step-label">Маска парковки</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+        <li><button type="button" class="step indent" data-page="mask-orientation" data-step="mask-orientation">
+          <span class="step-num">3b</span>
+          <span class="step-label">Маска орієнтації</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+        <li><button type="button" class="step indent" data-page="map" data-step="map">
+          <span class="step-num">3c</span>
+          <span class="step-label">Карта</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+        <li><button type="button" class="step" data-page="export" data-step="export">
+          <span class="step-num">4</span>
+          <span class="step-label">Експорт</span>
+          <span class="step-status" aria-hidden="true"></span>
+        </button></li>
+      </ol>
+      <div class="sidebar-help">
+        <p>Натисніть на крок ліворуч щоб перейти.<br>Кроки розблоковуються в міру виконання попередніх.</p>
+      </div>
+    </nav>
+
+    <section class="content">
+      <!-- CAMERA -->
+      <article id="page-camera" class="page hidden">
+        <header class="page-header">
+          <h1>1. Камера</h1>
+          <p>Підключіться до RTSP потоку і захопіть один кадр для калібрування.</p>
+        </header>
+        <div class="page-body two-col">
+          <div class="tools">
+            <fieldset>
+              <legend>Спосіб введення</legend>
+              <label class="radio"><input type="radio" name="cam-mode" value="builder" checked> Конструктор</label>
+              <label class="radio"><input type="radio" name="cam-mode" value="manual"> Ручний URL</label>
+            </fieldset>
+
+            <fieldset id="cam-builder">
+              <legend>Параметри камери</legend>
+              <label>Виробник
+                <select id="cam-vendor"></select>
+              </label>
+              <label>IP / хост
+                <input type="text" id="cam-ip" placeholder="192.168.1.10" autocomplete="off">
+              </label>
+              <label>Порт
+                <input type="number" id="cam-port" min="1" max="65535" value="554">
+              </label>
+              <label>Користувач
+                <input type="text" id="cam-user" placeholder="admin" autocomplete="off">
+              </label>
+              <label>Пароль
+                <input type="password" id="cam-pass" autocomplete="off">
+              </label>
+              <label id="cam-channel-wrap">Канал
+                <input type="number" id="cam-channel" min="1" max="99" value="1">
+              </label>
+              <label id="cam-custom-wrap" class="hidden">Custom path
+                <input type="text" id="cam-custom" placeholder="live/ch00_0">
+              </label>
+              <div class="muted small" id="cam-builder-preview"></div>
+            </fieldset>
+
+            <fieldset id="cam-manual" class="hidden">
+              <legend>RTSP URL</legend>
+              <label>URL
+                <input type="text" id="cam-url" placeholder="rtsp://user:pass@192.168.1.10:554/Streaming/Channels/101" autocomplete="off">
+              </label>
+            </fieldset>
+
+            <div class="row">
+              <button type="button" id="cam-test-btn">Тест підключення</button>
+              <button type="button" id="cam-capture-btn" class="primary">Захопити кадр</button>
+            </div>
+            <div id="cam-status" class="status" aria-live="polite"></div>
+          </div>
+
+          <div class="preview">
+            <div class="preview-header">
+              <span>Захоплений кадр</span>
+              <span id="cam-frame-info" class="muted small"></span>
+            </div>
+            <div class="preview-area" id="cam-frame-area">
+              <p class="placeholder">Тут зʼявиться кадр після успішного захоплення</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- BEV -->
+      <article id="page-bev" class="page hidden">
+        <header class="page-header">
+          <h1>2. BEV калібрування</h1>
+          <p>Перетягніть 4 точки на джерелі — вони визначають bird's-eye-view.</p>
+        </header>
+        <div class="page-body two-col bev-cols">
+          <div class="bev-source">
+            <div class="preview-header">
+              <span>Джерело (перетягуйте точки)</span>
+              <span class="muted small">ПКМ або Ctrl+ЛКМ — pan · Ctrl+scroll — zoom</span>
+            </div>
+            <div class="bev-svg-container" id="bev-source-container"></div>
+          </div>
+
+          <div class="bev-output">
+            <div class="preview-header">
+              <span>BEV preview</span>
+              <span id="bev-preview-status" class="muted small"></span>
+            </div>
+            <div class="preview-area" id="bev-preview-area">
+              <p class="placeholder">Тут зʼявиться BEV після переміщення точок</p>
+            </div>
+
+            <fieldset class="bev-controls">
+              <legend>Розмір BEV</legend>
+              <label>Ширина
+                <input type="number" id="bev-width" min="400" max="4000" step="50" value="1200">
+              </label>
+              <label>Висота
+                <input type="number" id="bev-height" min="400" max="4000" step="50" value="800">
+              </label>
+            </fieldset>
+
+            <fieldset class="bev-points-fs">
+              <legend>Координати точок</legend>
+              <div class="bev-points-grid" id="bev-points-grid"></div>
+              <div class="row">
+                <button type="button" id="bev-copy-btn" class="ghost small-btn">Copy JSON</button>
+                <button type="button" id="bev-paste-btn" class="ghost small-btn">Paste JSON</button>
+                <button type="button" id="bev-reset-btn" class="ghost small-btn">Reset до повного кадру</button>
+              </div>
+            </fieldset>
+
+            <div class="row sticky-actions">
+              <button type="button" id="bev-save-btn" class="primary">Зберегти BEV</button>
+              <span id="bev-save-status" class="status inline" aria-live="polite"></span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- MASK PARKING -->
+      <article id="page-mask-parking" class="page hidden" data-mask-kind="parking">
+        <header class="page-header">
+          <h1>3a. Маска парковки</h1>
+          <p>ЛКМ — зелений (дозволено). ПКМ — червоний (заборонено). На експорті — чорно-біла маска.</p>
+        </header>
+        <div class="page-body mask-layout">
+          <div class="mask-canvas-wrap" data-canvas-wrap>
+            <div class="mask-stack" data-mask-stack>
+              <img class="bev-underlay" data-bev-underlay alt="">
+              <canvas class="mask-canvas" data-mask-canvas></canvas>
+            </div>
+          </div>
+          <div class="tools">
+            <fieldset>
+              <legend>Пензель</legend>
+              <label>Розмір <span data-brush-size-label>30</span> px
+                <input type="range" min="3" max="150" value="30" data-brush-size>
+              </label>
+              <div class="legend">
+                <span class="swatch sw-green"></span> ЛКМ — дозволено (→ біле на експорті)
+                <br><span class="swatch sw-red"></span> ПКМ — заборонено (→ чорне на експорті)
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Відображення</legend>
+              <label><input type="checkbox" data-underlay-toggle checked> Показувати BEV</label>
+              <label>Прозорість маски <span data-underlay-opacity-label>55</span>%
+                <input type="range" min="0" max="100" value="55" data-underlay-opacity>
+              </label>
+            </fieldset>
+            <fieldset>
+              <legend>Дії</legend>
+              <div class="row">
+                <button type="button" data-undo-btn class="ghost small-btn">Undo (Ctrl+Z)</button>
+                <button type="button" data-redo-btn class="ghost small-btn">Redo (Ctrl+Y)</button>
+              </div>
+              <div class="row">
+                <button type="button" data-import-btn class="ghost small-btn">Import PNG</button>
+                <input type="file" accept="image/png,image/jpeg" data-import-input class="hidden">
+                <button type="button" data-clear-btn class="ghost small-btn">Очистити</button>
+              </div>
+              <button type="button" data-save-btn class="primary">Зберегти маску</button>
+              <span class="status inline" data-save-status aria-live="polite"></span>
+            </fieldset>
+          </div>
+        </div>
+      </article>
+
+      <!-- MASK ORIENTATION -->
+      <article id="page-mask-orientation" class="page hidden" data-mask-kind="orientation">
+        <header class="page-header">
+          <h1>3b. Маска орієнтації</h1>
+          <p>ЛКМ — зелений (паралельне). ПКМ — синій (перпендикулярне). Стирач — забрати зону.</p>
+        </header>
+        <div class="page-body mask-layout">
+          <div class="mask-canvas-wrap" data-canvas-wrap>
+            <div class="mask-stack" data-mask-stack>
+              <img class="bev-underlay" data-bev-underlay alt="">
+              <canvas class="mask-canvas" data-mask-canvas></canvas>
+            </div>
+          </div>
+          <div class="tools">
+            <fieldset>
+              <legend>Пензель</legend>
+              <label>Розмір <span data-brush-size-label>30</span> px
+                <input type="range" min="3" max="150" value="30" data-brush-size>
+              </label>
+              <label class="radio"><input type="radio" name="orient-tool" value="paint" checked> Малювати</label>
+              <label class="radio"><input type="radio" name="orient-tool" value="erase"> Стирач (зняти зону)</label>
+              <div class="legend">
+                <span class="swatch sw-green"></span> ЛКМ — паралельне (зелений)
+                <br><span class="swatch sw-blue"></span> ПКМ — перпендикулярне (синій)
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Відображення</legend>
+              <label><input type="checkbox" data-underlay-toggle checked> Показувати BEV</label>
+              <label>Прозорість маски <span data-underlay-opacity-label>55</span>%
+                <input type="range" min="0" max="100" value="55" data-underlay-opacity>
+              </label>
+            </fieldset>
+            <fieldset>
+              <legend>Дії</legend>
+              <div class="row">
+                <button type="button" data-undo-btn class="ghost small-btn">Undo (Ctrl+Z)</button>
+                <button type="button" data-redo-btn class="ghost small-btn">Redo (Ctrl+Y)</button>
+              </div>
+              <div class="row">
+                <button type="button" data-import-btn class="ghost small-btn">Import PNG</button>
+                <input type="file" accept="image/png,image/jpeg" data-import-input class="hidden">
+                <button type="button" data-clear-btn class="ghost small-btn">Очистити</button>
+              </div>
+              <button type="button" data-save-btn class="primary">Зберегти маску</button>
+              <span class="status inline" data-save-status aria-live="polite"></span>
+            </fieldset>
+          </div>
+        </div>
+      </article>
+
+      <!-- MAP -->
+      <article id="page-map" class="page hidden">
+        <header class="page-header">
+          <h1>3c. Карта парковки</h1>
+          <p>Малюйте полігони на BEV. Клік — нова вершина, подвійний клік або Enter — замикає полігон.</p>
+        </header>
+        <div class="page-body mask-layout">
+          <div class="map-svg-wrap" id="map-svg-wrap"></div>
+          <div class="tools">
+            <fieldset>
+              <legend>Режим</legend>
+              <label class="radio"><input type="radio" name="map-mode" value="add" checked> Додати полігон</label>
+              <label class="radio"><input type="radio" name="map-mode" value="edit"> Редагувати вершини</label>
+              <div class="muted small">
+                В режимі редагування: drag — переміщення вершини,<br>
+                Shift+click на ребрі — вставити вершину,<br>
+                Delete — видалити вершину/полігон.
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Підкладка BEV</legend>
+              <label><input type="checkbox" id="map-underlay-toggle" checked> Показувати</label>
+              <label>Прозорість <span id="map-underlay-opacity-label">60</span>%
+                <input type="range" min="0" max="100" value="60" id="map-underlay-opacity">
+              </label>
+            </fieldset>
+            <fieldset>
+              <legend>Полігони</legend>
+              <ul id="map-shapes-list" class="shapes-list"></ul>
+              <div class="row">
+                <button type="button" id="map-close-btn" class="ghost small-btn">Замкнути активний</button>
+                <button type="button" id="map-delete-btn" class="ghost small-btn">Видалити вибраний</button>
+              </div>
+              <button type="button" id="map-save-btn" class="primary">Зберегти карту</button>
+              <span id="map-save-status" class="status inline" aria-live="polite"></span>
+            </fieldset>
+          </div>
+        </div>
+      </article>
+
+      <!-- EXPORT -->
+      <article id="page-export" class="page hidden">
+        <header class="page-header">
+          <h1>4. Експорт</h1>
+          <p>Перевірте статус кожного артефакту та завантажте ZIP.</p>
+        </header>
+        <div class="page-body export-body">
+          <div class="export-checklist" id="export-checklist"></div>
+          <div class="export-actions">
+            <button type="button" id="export-btn" class="primary big">Завантажити ZIP</button>
+            <span id="export-status" class="status inline" aria-live="polite"></span>
+          </div>
+          <details class="instructions">
+            <summary>Як вставити в основний проєкт</summary>
+            <ol>
+              <li>Розпакуйте <code>parking_config.zip</code> у корінь репозиторію основного проєкту.</li>
+              <li>Файли <code>assets/parking_mask.png</code>, <code>assets/orientation_zones.png</code>, <code>assets/parking_map.svg</code> замінять (або створять) існуючі в <code>assets/</code>.</li>
+              <li>Перейменуйте <code>.env.example</code> на <code>.env</code> якщо ще не зробили і підмерджте змінні з нашого <code>.env</code>.</li>
+              <li>Для того щоб бекенд читав <code>SRC_POINTS</code> з <code>.env</code>, потрібен невеликий патч до <code>config.py</code>:
+                <pre><code>import json
+src_json = os.getenv("SRC_POINTS")
+SRC_POINTS_DEFAULT = [[-303,-163],[2070,339],[3165,1062],[831,1250]]
+SRC_POINTS = np.array(
+    json.loads(src_json) if src_json else SRC_POINTS_DEFAULT,
+    dtype=np.float32,
+)
+BEV_WIDTH = int(os.getenv("BEV_WIDTH", "1200"))
+BEV_HEIGHT = int(os.getenv("BEV_HEIGHT", "800"))</code></pre>
+              </li>
+              <li>Запустіть <code>python monitor.py</code> або підніміть API сервер — нові налаштування підтягнуться з <code>.env</code>.</li>
+            </ol>
+          </details>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toast-container" aria-live="polite"></div>
+
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -24,16 +24,25 @@ cp .env.example .env       # then edit .env and set CAMERA_URL
 docker compose up
 ```
 
-Open <http://localhost:8000/web/> — the dashboard polls the API every two
-seconds and shows live occupancy plus a 1 h / 24 h / 7 d / 30 d history
-chart.
+Open <http://localhost:8000/web/> — a live host-status dashboard
+(CPU / RAM / disk + pipeline & camera health) polled every two seconds.
+Occupancy snapshots are served as JSON at `/api/v1/state`, with a history
+endpoint at `/api/v1/history` (1 h / 24 h / 7 d / 30 d).
+
+> **First time on a new lot?** Run the [setup
+> tool](parking_configurator/README.md) first to calibrate BEV and paint
+> masks for your camera — then point `docker compose` at the generated
+> `.env` and assets.
 
 No Docker? Run directly with uvicorn:
 
 ```bash
 pip install -r requirements.txt -r api/requirements.txt
-DB_PATH=./parking_history.db uvicorn api.server:app --host 0.0.0.0 --port 8000
+uvicorn api.server:app --host 0.0.0.0 --port 8000
 ```
+
+The SQLite history file lands in `./data/parking_history.db` by default
+(override with `DB_PATH=...` if you want it elsewhere).
 
 See [`docs/deployment.md`](docs/deployment.md) for production setups,
 reverse-proxy / HTTPS, and Raspberry Pi notes.
@@ -55,12 +64,12 @@ reverse-proxy / HTTPS, and Raspberry Pi notes.
   history.
 - **Occupancy history** — SQLite database, configurable retention,
   survives Docker redeploys via a bind-mount.
-- **Built-in web UI** — dashboard with live spot overlay, time-series
-  chart, and host system metrics.
+- **Built-in web UI** — host-status dashboard (CPU / RAM / disk +
+  pipeline and camera health banner).
 
 ### Built with
 
-YOLOv11 · OpenCV · FastAPI + uvicorn · Pydantic · NumPy · SQLite
+YOLOv26 · OpenCV · FastAPI + uvicorn · Pydantic · NumPy · SQLite
 
 ---
 
@@ -97,9 +106,12 @@ parking-monitor/
 └── docs/                   # Full documentation (see below)
 ```
 
-`tools/` and `parking_configurator/` contain owner-only calibration
-utilities — see [`docs/calibration.md`](docs/calibration.md) if you want to
-redo them for your own camera.
+Setting up your own camera location? See
+[`parking_configurator/`](parking_configurator/README.md) — a local web
+tool that walks you through camera connection, BEV calibration, mask
+painting and exports a ready-to-use `parking_config.zip`.
+
+`tools/` contains additional CLI calibration utilities (owner use).
 
 ---
 
@@ -109,10 +121,13 @@ redo them for your own camera.
 |---|---|---|
 | 📊 **Web dashboard + JSON API** | `docker compose up` | Production / sharing with others |
 | 🖥️ **Standalone OpenCV monitor** | `python monitor.py` | Local debugging on the machine itself |
-| 🛠️ **Calibration** | [`docs/calibration.md`](docs/calibration.md) | Setting up a new camera location |
+| 🛠️ **Setup for a new camera** | `python -m parking_configurator` (from `parking_configurator/`) | Calibrating BEV, painting masks, drawing the map |
 
 Standalone monitor controls: <kbd>q</kbd> quit, <kbd>s</kbd> save
 screenshot to `output/`.
+
+For first-time setup on a fresh parking lot, see
+[`parking_configurator/README.md`](parking_configurator/README.md).
 
 ---
 
@@ -124,9 +139,8 @@ screenshot to `output/`.
 | [Configuration reference](docs/configuration.md) | Every `.env` variable and every `config.py` setting |
 | [Deployment guide](docs/deployment.md) | Docker, Docker Compose, plain uvicorn, Jenkins, reverse proxy, Raspberry Pi |
 | [Temporal smoothing](docs/temporal-smoothing.md) | The K-of-N algorithm and how to tune it |
-| [Calibration](docs/calibration.md) | How to set up the camera + masks for your own lot |
+| [Setup tool](parking_configurator/README.md) | How to set up the camera + masks for your own lot |
 | [API specification](api/README.md) | All endpoints, schemas, query parameters, error responses |
-| [Frontend integration](api/FRONTEND.md) | Polling, coordinates, and tips for building your own UI |
 
 ---
 
@@ -138,8 +152,8 @@ screenshot to `output/`.
 | **API returns 503 on first request** | Normal — pipeline is starting. Keep polling, fresh data within ~2 s. |
 | **Cars: count flickers** | Already on by default. If still flickering, see [temporal-smoothing.md](docs/temporal-smoothing.md#picking-k-and-n) for tuning. |
 | **YOLO misses cars** | Lower `CONF_THRESHOLD` in `config.py` (e.g. `0.35` → `0.25`). |
-| **BEV looks distorted** | Recalibrate `SRC_POINTS` — see [calibration.md](docs/calibration.md). |
-| **Algorithm marks flowerbeds as free spots** | Paint those areas black in `assets/parking_mask.png`. |
+| **BEV looks distorted** | Recalibrate `SRC_POINTS` — use [`parking_configurator/`](parking_configurator/README.md). |
+| **Algorithm marks flowerbeds as free spots** | Paint those areas black in `assets/parking_mask.png` (use the configurator or `tools/edit_parking_mask.py`). |
 
 ---
 

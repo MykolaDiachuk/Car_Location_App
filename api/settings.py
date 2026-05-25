@@ -14,6 +14,12 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+# Default DB location for bare-metal / Windows / macOS deployments. Docker
+# users override this to /data/parking_history.db via the DB_PATH env var so
+# the bind-mount at /data persists across container redeploys.
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+_DEFAULT_DB_PATH = str(_PROJECT_ROOT / "data" / "parking_history.db")
+
 
 def _env_bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
@@ -53,8 +59,9 @@ class Settings:
     stale_threshold: float = 10.0
     heartbeat_interval: float = 3600.0  # 0 disables heartbeat snapshots
 
-    # Database
-    db_path: str = "/data/parking_history.db"
+    # Database — defaults to <project_root>/data/parking_history.db for
+    # bare-metal use. Docker users override via DB_PATH=/data/parking_history.db.
+    db_path: str = _DEFAULT_DB_PATH
     record_interval: float = 120.0
     retention_days: int = 90
 
@@ -74,7 +81,7 @@ class Settings:
             idle_timeout=_env_float("IDLE_TIMEOUT", 30.0),
             stale_threshold=_env_float("STALE_THRESHOLD", 10.0),
             heartbeat_interval=_env_float("HEARTBEAT_INTERVAL", 3600.0),
-            db_path=os.getenv("DB_PATH", "/data/parking_history.db"),
+            db_path=os.getenv("DB_PATH", _DEFAULT_DB_PATH),
             record_interval=_env_float("RECORD_INTERVAL", 120.0),
             retention_days=_env_int("RETENTION_DAYS", 90),
             cors_origins=_env_origins("CORS_ORIGINS"),

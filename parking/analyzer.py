@@ -5,7 +5,6 @@ import numpy as np
 
 from parking.models import (
     BBox,
-    NormalizedPoint,
     ParkingSpot,
     ParkingState,
     SpotOrientation,
@@ -179,9 +178,6 @@ class ParkingAnalyzer:
             return BBox(x1=x - bw, y1=y - bh, x2=x, y2=y)
         return BBox(x1=x - bw // 2, y1=y - bh, x2=x + bw // 2, y2=y)
     
-    def _normalize(self, x: int, y: int) -> NormalizedPoint:
-        return NormalizedPoint(x=round(x / self.bev_w, 4), y=round(y / self.bev_h, 4))
-    
     def _make_spot(
         self,
         spot_id: int,
@@ -189,15 +185,12 @@ class ParkingAnalyzer:
         y: int,
         orientation: SpotOrientation,
         status: SpotStatus,
-        confidence: float = 1.0,
     ) -> ParkingSpot:
         return ParkingSpot(
             id=spot_id,
             status=status,
             orientation=orientation,
-            center_bev=self._normalize(x, y),
             bbox_bev=self._spot_bbox(x, y, orientation),
-            confidence=confidence,
         )
     
     def _mark_occupied(
@@ -271,27 +264,25 @@ class ParkingAnalyzer:
         # Pre-compute BEV anchor + orientation for each detection.
         # Orientation uses full bbox polygon projection for robustness
         # (vs single-anchor-point lookup used for free spots).
-        occupied_points: list[tuple[int, int, float, SpotOrientation]] = []
+        occupied_points: list[tuple[int, int, SpotOrientation]] = []
         for det in detections:
             x1, y1, x2, y2 = map(int, det[:4])
-            conf = float(det[4])
             ax = x2 if self.anchor == "bottom_right" else (x1 + x2) // 2
             px, py = transformer.transform_point(ax, y2)
             px = max(0, min(self.bev_w - 1, px))
             py = max(0, min(self.bev_h - 1, py))
             o = self._orientation_for_det(x1, y1, x2, y2, transformer)
-            occupied_points.append((px, py, conf, o))
+            occupied_points.append((px, py, o))
 
-        mask_points = [(x, y, o) for x, y, _, o in occupied_points]
-        temp_mask = self._mark_occupied(self.parking_mask.copy(), mask_points)
+        temp_mask = self._mark_occupied(self.parking_mask.copy(), occupied_points)
         free_spots = self._find_free_spots(temp_mask)
 
         result = cv2.addWeighted(bev_view, 0.7, self.zone_mask, 0.3, 0)
         next_id = 0
 
-        for x, y, conf, o in occupied_points:
+        for x, y, o in occupied_points:
             self._draw_spot(result, x, y, o, occupied=True)
-            all_spots.append(self._make_spot(next_id, x, y, o, SpotStatus.OCCUPIED, confidence=conf))
+            all_spots.append(self._make_spot(next_id, x, y, o, SpotStatus.OCCUPIED))
             next_id += 1
 
         for x, y, o in free_spots:

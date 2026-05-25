@@ -1,0 +1,8 @@
+{
+  "camera_url": null,
+  "has_frame": false,
+  "bev": null,
+  "has_parking_mask": false,
+  "has_orientation_mask": false,
+  "map_shapes": []
+}

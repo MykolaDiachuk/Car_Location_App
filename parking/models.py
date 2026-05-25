@@ -24,16 +24,6 @@ class BBox(BaseModel):
     y2: int
 
 
-class NormalizedPoint(BaseModel):
-    """Position normalized to 0.0–1.0 range relative to BEV dimensions.
-
-    Frontend can multiply by map width/height to place markers
-    on any resolution.
-    """
-    x: float = Field(ge=0.0, le=1.0)
-    y: float = Field(ge=0.0, le=1.0)
-
-
 class ParkingSpot(BaseModel):
     """Single parking spot detected in current frame.
 
@@ -43,9 +33,7 @@ class ParkingSpot(BaseModel):
     id: int
     status: SpotStatus
     orientation: SpotOrientation
-    center_bev: NormalizedPoint
     bbox_bev: BBox
-    confidence: float = Field(ge=0.0, le=1.0, default=1.0)
 
 
 class ParkingState(BaseModel):
@@ -65,11 +53,10 @@ class StateResponse(BaseModel):
     """API response for /api/v1/state.
 
     Wraps a ParkingState snapshot with metadata the frontend needs:
-    BEV canvas size for coordinate scaling, freshness info, and
-    pipeline status for showing UI hints (loading, offline, etc.).
+    snapshot time, BEV canvas size for coordinate scaling, freshness
+    info, and pipeline status for showing UI hints (loading, offline).
     """
     timestamp: datetime
-    age_seconds: float = Field(ge=0.0)
     stale: bool
     pipeline_status: PipelineStatus
     bev_width: int
@@ -97,7 +84,6 @@ class HistoryResponse(BaseModel):
     bucket_seconds: int = Field(
         description="Aggregation window in seconds. 0 = raw data (no aggregation)."
     )
-    point_count: int
     points: list[HistoryPoint]
 
 

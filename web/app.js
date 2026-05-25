@@ -1,6 +1,7 @@
 "use strict";
 
 const API_URL = "/api/v1/system";
+const HEALTH_URL = "/api/v1/health";
 const POLL_INTERVAL = 2000; // ms
 
 // ── Mini canvas chart ──────────────────────────────────────────────────────────
@@ -182,6 +183,64 @@ function updateCurrent(cur) {
   setText("info-uptime", fmtUptime(cur.uptime_seconds));
 }
 
+// ── Health banner ───────────────────────────────────────────────────────────
+
+function renderHealthBanner(health) {
+  const el = document.getElementById("health-banner");
+  if (!el) return;
+
+  const pipelineStatus = health?.pipeline?.status;
+  const lastError = health?.pipeline?.last_error;
+  const cameraConnected = health?.camera?.connected;
+
+  if (health?.status === "error" || pipelineStatus === "error") {
+    el.className = "banner error show";
+    el.innerHTML =
+      "<strong>Pipeline error</strong>" +
+      (lastError
+        ? `${escapeHtml(lastError)} — check your <code>.env</code> and restart.`
+        : "The detection pipeline failed to start. Check container logs: <code>docker compose logs -f</code>.");
+    return;
+  }
+
+  if (pipelineStatus === "starting" || health?.status === "starting") {
+    el.className = "banner warn show";
+    el.innerHTML =
+      "<strong>Pipeline starting…</strong>Waiting for the first camera frame. This usually takes a few seconds.";
+    return;
+  }
+
+  if (cameraConnected === false) {
+    el.className = "banner warn show";
+    el.innerHTML =
+      "<strong>Camera disconnected</strong>The pipeline is running but cannot reach the camera. Verify <code>CAMERA_URL</code> and network reachability.";
+    return;
+  }
+
+  el.className = "banner";
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+async function pollHealth() {
+  try {
+    const res = await fetch(HEALTH_URL);
+    if (!res.ok) return;
+    const health = await res.json();
+    renderHealthBanner(health);
+  } catch (_e) {
+    // Network failure: leave whatever banner state is on screen. The main
+    // /system poll already surfaces "Error: …" in the status footer.
+  }
+}
+
 // ── Polling loop ────────────────────────────────────────────────────────────
 
 let serverInfoSet = false;
@@ -213,4 +272,6 @@ async function poll() {
 
 // Initial + interval
 poll();
+pollHealth();
 setInterval(poll, POLL_INTERVAL);
+setInterval(pollHealth, POLL_INTERVAL);

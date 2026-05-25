@@ -67,12 +67,11 @@ cp .env.example .env       # edit: set CAMERA_URL
 uvicorn api.server:app --host 0.0.0.0 --port 8000
 ```
 
-The default `DB_PATH=/data/parking_history.db` won't be writable on most
-hosts — override it:
-
-```bash
-DB_PATH=./parking_history.db uvicorn api.server:app --port 8000
-```
+The SQLite history file lands in `<project_root>/data/parking_history.db`
+by default (auto-created on first run). Override with `DB_PATH=...` if you
+want it elsewhere. The Docker images explicitly set
+`DB_PATH=/data/parking_history.db` so history lands on the persistent
+bind-mount.
 
 For development reloads: append `--reload`. Don't use `--reload` in
 production — the background pipeline worker doesn't survive auto-reload.

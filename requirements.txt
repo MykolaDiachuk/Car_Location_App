@@ -1,6 +1,9 @@
-ultralytics
-opencv-python
-numpy
-pydantic
-python-dotenv
-aiofiles
+# Pinned to known-good versions for reproducibility. Bump deliberately,
+# not accidentally. `pip install -r requirements.txt` should give every
+# user the same behaviour the project was tested with.
+ultralytics==8.4.14
+opencv-python==4.13.0.92
+numpy==2.4.2
+pydantic==2.12.5
+python-dotenv==1.2.2
+aiofiles==25.1.0

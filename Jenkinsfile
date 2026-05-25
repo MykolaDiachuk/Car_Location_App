@@ -25,6 +25,7 @@ pipeline {
                       --restart unless-stopped \
                       -p 8000:8000 \
                       --env-file /var/jenkins_home/backend.env \
+                      -e DB_PATH=/data/parking_history.db \
                       -v /home/mykola/parking-data:/data \
                       parking-backend:latest
                 '''

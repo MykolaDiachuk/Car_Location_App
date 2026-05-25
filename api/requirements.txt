@@ -1,3 +1,5 @@
-fastapi>=0.111.0
-uvicorn[standard]>=0.29.0
-psutil>=5.9.0
+# Pinned to known-good versions for reproducibility. See top-level
+# requirements.txt for the rationale.
+fastapi==0.135.3
+uvicorn[standard]==0.44.0
+psutil==7.2.2

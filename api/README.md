@@ -46,7 +46,6 @@ camera is released.
 ```json
 {
   "timestamp": "2026-05-15T12:00:00.000Z",
-  "age_seconds": 0.84,
   "stale": false,
   "pipeline_status": "running",
   "bev_width": 1200,
@@ -60,15 +59,14 @@ camera is released.
       "id": 0,
       "status": "free",
       "orientation": "parallel",
-      "center_bev": { "x": 0.15, "y": 0.65 },
-      "bbox_bev": { "x1": 525, "y1": 480, "x2": 675, "y2": 560 },
-      "confidence": 0.91
+      "bbox_bev": { "x1": 525, "y1": 480, "x2": 675, "y2": 560 }
     }
   ]
 }
 ```
 
-`stale: true` when snapshot age exceeds `STALE_THRESHOLD` (default 10 s).
+`stale: true` when snapshot age (server time minus `timestamp`) exceeds
+`STALE_THRESHOLD` (default 10 s).
 
 **Response `503 Service Unavailable`** — pipeline is starting and has no
 snapshot yet. Retry after 1–2 seconds.
@@ -110,7 +108,6 @@ Default when no params: last 24 hours. Maximum range: 90 days.
   "period_from": "2026-01-01T00:00:00Z",
   "period_to":   "2026-01-08T00:00:00Z",
   "bucket_seconds": 1800,
-  "point_count": 229,
   "points": [
     {
       "timestamp": "2026-01-01T00:00:00Z",
@@ -220,7 +217,6 @@ Single data point returned in `/api/v1/history`.
 | `period_from` | ISO 8601 datetime | Start of the queried range |
 | `period_to` | ISO 8601 datetime | End of the queried range |
 | `bucket_seconds` | `int` | Aggregation window in seconds; `0` = raw |
-| `point_count` | `int` | Number of points in `points` array |
 | `points` | `HistoryPoint[]` | Ordered chronologically |
 
 ### `PipelineStatus`
@@ -247,24 +243,13 @@ Single data point returned in `/api/v1/history`.
 | `id` | `int` | Unique within one response. **Not stable** across frames — do not persist. |
 | `status` | `SpotStatus` | |
 | `orientation` | `SpotOrientation` | Painted in `orientation_zones.png` |
-| `center_bev` | `NormalizedPoint` | `x`, `y` in range `[0.0, 1.0]` relative to BEV canvas |
 | `bbox_bev` | `BBox` | `x1 y1 x2 y2` in BEV pixels |
-| `confidence` | `float [0–1]` | YOLO detection confidence |
-
-### `NormalizedPoint`
-
-Coordinates normalized to `[0.0, 1.0]` relative to `bev_width` /
-`bev_height`. To convert to pixels on a canvas of size `W × H`:
-
-```
-pixel_x = center_bev.x * W
-pixel_y = center_bev.y * H
-```
 
 ### `BBox`
 
 Axis-aligned bounding box in **BEV pixel coordinates** (not normalized).
 Origin is top-left. Scale to your canvas using `bev_width` / `bev_height`.
+Compute a spot's centre with `((x1+x2)/2, (y1+y2)/2)`.
 
 ---
 

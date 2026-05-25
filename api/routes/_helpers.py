@@ -26,7 +26,6 @@ def build_state_response(
     age = max(0.0, time.monotonic() - snapshot_at_mono)
     return StateResponse(
         timestamp=state.timestamp,
-        age_seconds=round(age, 2),
         stale=age > settings.stale_threshold,
         pipeline_status=store.pipeline_status,
         bev_width=bev_w,

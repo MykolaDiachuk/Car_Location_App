@@ -112,6 +112,5 @@ def get_history(
         period_from=qfrom,
         period_to=qto,
         bucket_seconds=bucket,
-        point_count=len(points),
         points=points,
     )
