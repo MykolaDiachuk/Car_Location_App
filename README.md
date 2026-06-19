@@ -27,7 +27,6 @@ result into the project. Follow the steps in order.
 
 ```bash
 git clone https://github.com/USER/parking-monitor.git
-cd parking-monitor
 ```
 
 ### Step 2 — Calibrate your camera with the Parking Configurator
