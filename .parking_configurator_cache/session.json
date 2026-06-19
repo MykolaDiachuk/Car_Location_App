@@ -1,8 +1,55 @@
 {
-  "camera_url": null,
-  "has_frame": false,
-  "bev": null,
-  "has_parking_mask": false,
-  "has_orientation_mask": false,
-  "map_shapes": []
+  "camera_url": "rtsp://admin:asertan12@192.168.0.120:5554/cam/realmonitor?channel=1&subtype=0",
+  "has_frame": true,
+  "bev": {
+    "src_points": [
+      [
+        358,
+        237
+      ],
+      [
+        2068,
+        366
+      ],
+      [
+        2598,
+        990
+      ],
+      [
+        1020,
+        1219
+      ]
+    ],
+    "width": 1200,
+    "height": 800
+  },
+  "has_parking_mask": true,
+  "has_orientation_mask": true,
+  "map_shapes": [
+    {
+      "id": "shape-1",
+      "points": [
+        [
+          340.18621826171875,
+          65.40187072753906
+        ],
+        [
+          367.781982421875,
+          238.7030029296875
+        ],
+        [
+          579.7171020507812,
+          228.76856994628906
+        ],
+        [
+          619.4550170898438,
+          105.13973999023438
+        ],
+        [
+          472.64569091796875,
+          62.09037399291992
+        ]
+      ]
+    }
+  ]
 }

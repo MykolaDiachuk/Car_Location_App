@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m api.mock_state)",
+      "Bash(python -c ':*)",
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in ['config.py', 'parking/models.py', 'parking/detector.py', 'parking/analyzer.py', 'parking/pipeline.py', 'monitor.py', 'api/mock_state.py']]; print\\('All files parse OK'\\)\")",
+      "Bash(python -m py_compile parking/models.py parking/analyzer.py parking/pipeline.py parking/transformer.py parking/detector.py config.py api/server.py api/mock_state.py monitor.py)",
+      "Bash(MOCK_MODE=true python -m api.mock_state)",
+      "Bash(MOCK_MODE=true IDLE_TIMEOUT=5 ANALYSIS_INTERVAL=0.5 STALE_THRESHOLD=3 uvicorn api.server:app --host 127.0.0.1 --port 8765 --log-level warning)",
+      "Bash(curl -sf -o /dev/null http://127.0.0.1:8765/)",
+      "Bash(python -c \"import uvicorn; print\\(uvicorn.__version__\\)\")",
+      "Bash(curl -s http://127.0.0.1:8765/)",
+      "Bash(curl -s http://127.0.0.1:8765/api/v1/health)",
+      "Bash(curl -s -w '\\\\nHTTP %{http_code}\\\\n' http://127.0.0.1:8765/api/v1/state)",
+      "Bash(curl -s http://127.0.0.1:8765/api/v1/state)",
+      "Bash(python -m json.tool)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('status=%s age=%ss stale=%s occ=%d/%d' % \\(d['pipeline_status'], d['age_seconds'], d['stale'], d['occupied'], d['total_spots']\\)\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('  health.pipeline.status=%s frames_processed=%d' % \\(d['pipeline']['status'], d['pipeline']['frames_processed']\\)\\)\")",
+      "Bash(curl -s -i -X OPTIONS http://127.0.0.1:8765/api/v1/state -H 'Origin: https://parking.chnu.edu.ua' -H 'Access-Control-Request-Method: GET')",
+      "Bash(curl -s -i http://127.0.0.1:8765/api/v1/state -H 'Origin: https://parking.chnu.edu.ua')",
+      "Bash(curl -s -o /dev/null -w 'HTTP %{http_code}\\\\n' http://127.0.0.1:8765/docs)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); s=d['spots'][0]; print\\('sample spot:', json.dumps\\(s, indent=2\\)\\)\")",
+      "Bash(pkill -f \"uvicorn api.server:app\")",
+      "Bash(pkill -f \"127.0.0.1:8765\")",
+      "Bash(echo \"exit=$?\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //F //PID 26612)",
+      "PowerShell(gh --version)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Program Files\\\\GitHub CLI\", \"C:\\\\Program Files \\(x86\\)\\\\GitHub CLI\", \"$env:LOCALAPPDATA\\\\Programs\\\\GitHub CLI\", \"$env:USERPROFILE\\\\scoop\\\\apps\\\\gh\" -Filter gh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 3 -ExpandProperty FullName)",
+      "Bash(git config *)",
+      "Bash(git credential-manager *)"
+    ]
+  }
+}

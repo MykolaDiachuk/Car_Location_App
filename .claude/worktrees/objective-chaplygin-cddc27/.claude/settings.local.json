@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m api.mock_state)",
+      "Bash(python -c ':*)",
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in ['config.py', 'parking/models.py', 'parking/detector.py', 'parking/analyzer.py', 'parking/pipeline.py', 'monitor.py', 'api/mock_state.py']]; print\\('All files parse OK'\\)\")"
+    ]
+  }
+}

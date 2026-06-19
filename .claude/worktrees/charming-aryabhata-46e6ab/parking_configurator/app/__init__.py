@@ -1,0 +1,1 @@
+"""Parking Configurator app package."""

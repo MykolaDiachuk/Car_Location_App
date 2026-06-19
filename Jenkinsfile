@@ -34,7 +34,11 @@ pipeline {
     }
 
     post {
-        success { echo 'Backend deployed!' }
-        failure { echo 'Build failed.' }
+    always {
+        sh 'docker builder prune -f'
+        sh 'docker image prune -f'
+    }
+    success { echo 'Backend deployed!' }
+    failure  { echo 'Build failed.' }
     }
 }
