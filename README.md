@@ -39,7 +39,7 @@ the `assets/` your camera needs.
 ```bash
 cd parking_configurator
 pip install -e .
-python -m parking_configurator        # opens http://127.0.0.1:8765
+python -m parking_configurator
 ```
 
 Work through the four steps in the browser (camera → BEV → masks → export)
@@ -53,7 +53,7 @@ From the project root, unpack the bundle so `.env` and the calibrated
 you and merges the `.env` keys:
 
 ```bash
-cd ..                                              # back to project root
+cd ..
 python scripts/apply_config.py path/to/parking_config.zip
 ```
 
