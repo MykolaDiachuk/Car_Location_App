@@ -26,7 +26,7 @@ result into the project. Follow the steps in order.
 ### Step 1 — Clone the repository
 
 ```bash
-git clone https://github.com/USER/parking-monitor.git
+git clone https://github.com/MykolaDiachuk/Car_Location_App.git
 ```
 
 ### Step 2 — Calibrate your camera with the Parking Configurator
