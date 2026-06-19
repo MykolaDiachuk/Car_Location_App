@@ -1,7 +1,7 @@
 # Parking Monitor
 
 > Real-time parking lot occupancy from a single RTSP camera, powered by
-> YOLOv11 and Bird's Eye View perspective correction.
+> YOLOv26 and Bird's Eye View perspective correction.
 > Works on **unstructured lots** without painted lane markings.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -15,24 +15,76 @@
 
 ---
 
-## Quick start
+## Getting started
+
+Every parking lot is different — the camera angle, the layout, and which
+areas count as parking all change from one site to the next. So before you
+run the server you calibrate the system **once** for your camera with the
+[Parking Configurator](parking_configurator/README.md), then drop the
+result into the project. Follow the steps in order.
+
+### Step 1 — Clone the repository
 
 ```bash
 git clone https://github.com/USER/parking-monitor.git
 cd parking-monitor
-cp .env.example .env       # then edit .env and set CAMERA_URL
+```
+
+### Step 2 — Calibrate your camera with the Parking Configurator
+
+The configurator is a local, browser-based setup tool. It connects to your
+RTSP camera, walks you through Bird's Eye View calibration and mask
+painting, and exports a `parking_config.zip` containing a `.env` file and
+the `assets/` your camera needs.
+
+```bash
+cd parking_configurator
+pip install -e .
+python -m parking_configurator        # opens http://127.0.0.1:8765
+```
+
+Work through the four steps in the browser (camera → BEV → masks → export)
+and download `parking_config.zip`. Full walkthrough:
+[`parking_configurator/README.md`](parking_configurator/README.md).
+
+### Step 3 — Apply the configuration to the project
+
+From the project root, unpack the bundle so `.env` and the calibrated
+`assets/*.png` land in the right places. The helper script does this for
+you and merges the `.env` keys:
+
+```bash
+cd ..                                              # back to project root
+python scripts/apply_config.py path/to/parking_config.zip
+```
+
+Add `--dry-run` first to preview the changes. Prefer to do it by hand?
+Unzip `parking_config.zip` into the project root — `.env` goes to the root
+and the masks go into `assets/`:
+
+```
+parking_config.zip
+├── .env                         → project root (CAMERA_URL, SRC_POINTS, BEV size)
+└── assets/
+    ├── parking_mask.png         → assets/parking_mask.png
+    ├── orientation_zones.png    → assets/orientation_zones.png
+    └── parking_map.svg          → assets/parking_map.svg (optional, for the UI)
+```
+
+> No configurator yet, just trying it out? Copy the template instead:
+> `cp .env.example .env`, then edit `.env` and set `CAMERA_URL`. You'll
+> get detections, but free-spot accuracy depends on calibrated masks.
+
+### Step 4 — Run the server
+
+```bash
 docker compose up
 ```
 
-Open <http://localhost:8000/web/> — a live host-status dashboard
+Then open <http://localhost:8000/web/> — a live host-status dashboard
 (CPU / RAM / disk + pipeline & camera health) polled every two seconds.
 Occupancy snapshots are served as JSON at `/api/v1/state`, with a history
 endpoint at `/api/v1/history` (1 h / 24 h / 7 d / 30 d).
-
-> **First time on a new lot?** Run the [setup
-> tool](parking_configurator/README.md) first to calibrate BEV and paint
-> masks for your camera — then point `docker compose` at the generated
-> `.env` and assets.
 
 No Docker? Run directly with uvicorn:
 

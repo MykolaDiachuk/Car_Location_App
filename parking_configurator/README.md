@@ -1,12 +1,15 @@
 # Parking Configurator
 
-Локальний веб-інструмент для одноразового налаштування системи моніторингу парковки. Запускається у тебе на ноутбуці перед деплоєм: підключаєш камеру, калібруєш зображення, малюєш маски і карту — на виході отримуєш архів з готовими файлами, які кладеш у головний проєкт.
+A local web tool for the one-time setup of the parking monitoring system.
+You run it on your laptop before deploying: connect the camera, calibrate
+the image, paint the masks and draw the map — and you get an archive with
+ready-to-use files to drop into the main project.
 
 ---
 
-## Як запустити
+## How to run
 
-Потрібен **Python 3.10+** і доступ до RTSP-камери, яку ти будеш використовувати.
+You need **Python 3.10+** and access to the RTSP camera you'll be using.
 
 ```bash
 cd parking_configurator
@@ -14,132 +17,172 @@ pip install -e .
 python -m parking_configurator
 ```
 
-Браузер відкриється автоматично на `http://127.0.0.1:8765`. Якщо ні — відкрий вручну.
+The browser opens automatically at `http://127.0.0.1:8765`. If it doesn't,
+open it manually.
 
-Якщо хочеш почати з нуля (стерти попередню сесію):
+To start from scratch (wipe the previous session):
+
 ```bash
 python -m parking_configurator --fresh
 ```
 
 ---
 
-## Як працювати
+## How it works
 
-Інтерфейс — це 4 кроки у лівій панелі. Кроки розблоковуються в міру виконання попередніх. Усе, що ти зробиш, **автоматично зберігається** — можна закрити вкладку посеред роботи і повернутися пізніше.
+The interface has 4 steps in the left sidebar. Steps unlock as you complete
+the previous ones. Everything you do is **saved automatically** — you can
+close the tab in the middle of the work and come back later.
 
-### 1. Камера
+### 1. Camera
 
-Підключи RTSP-потік камери:
+Connect the camera's RTSP stream:
 
-- **Конструктор**: обери виробника зі списку (Hikvision, Dahua, Axis, Reolink, TP-Link Tapo, ONVIF, або кастомний шлях). Введи IP, порт, логін, пароль — потрібний URL збереться сам.
-- **Ручний URL**: встав готовий RTSP-рядок цілком.
+- **Builder**: pick a manufacturer from the list (Hikvision, Dahua, Axis,
+  Reolink, TP-Link Tapo, ONVIF, or a custom path). Enter the IP, port,
+  username and password — the correct URL is assembled for you.
+- **Manual URL**: paste a complete RTSP string.
 
-Натисни **Тест підключення** — переконайся що камера відповідає. Потім **Захопити кадр** — це збереже один кадр для подальших кроків.
+Click **Test connection** to make sure the camera responds. Then
+**Capture frame** — this saves one frame for the following steps.
 
-> Якщо тест провалюється: перевір порт у налаштуваннях камери (зазвичай 554 або 5554), переконайся що логін/пароль правильні, і що камера доступна з твого ноутбука у мережі.
+> If the test fails: check the port in the camera settings (usually 554 or
+> 5554), make sure the username/password are correct, and that the camera
+> is reachable from your laptop on the network.
 
-### 2. BEV калібрування
+### 2. BEV calibration
 
-Тепер треба сказати системі, **яку ділянку зображення вона аналізує**. Перетягни 4 кольорових точки на фото так, щоб вони обмежили прямокутник парковки (як якщо б ти дивився на неї згори):
+Now you tell the system **which area of the image it analyzes**. Drag the 4
+colored points on the photo so they bound the parking rectangle (as if you
+were looking at it from above):
 
-- 🟢 **TL** — лівий верхній кут парковки
-- 🔵 **TR** — правий верхній
-- 🔴 **BR** — правий нижній
-- 🟡 **BL** — лівий нижній
+- 🟢 **TL** — top-left corner of the lot
+- 🔵 **TR** — top-right
+- 🔴 **BR** — bottom-right
+- 🟡 **BL** — bottom-left
 
-Точки можуть бути **поза межами кадру** — це нормально (якщо парковка обрізана краєм фото). Праворуч одразу зʼявляється "вид згори" (Bird's Eye View) — переконайся що він виглядає як прямокутник парковки.
+The points can be **outside the frame** — that's fine (if the lot is
+clipped by the edge of the photo). The "top-down" view (Bird's Eye View)
+appears immediately on the right — make sure it looks like a rectangular
+parking lot.
 
-`BEV Width × BEV Height` — розмір отриманого "виду згори" у пікселях. За замовчуванням 1200×800 — підходить для більшості випадків.
+`BEV Width × BEV Height` is the size of the resulting "top-down" view in
+pixels. The default 1200×800 works for most cases.
 
-Натисни **Зберегти BEV** щоб розблокувати наступні кроки.
+Click **Save BEV** to unlock the next steps.
 
-### 3. Маски та карта (можна в будь-якому порядку)
+### 3. Masks and map (any order)
 
-Тут малюєш поверх BEV. **Малюнки напівпрозорі** — фото проглядається, щоб орієнтуватися. На експорті залишаються тільки маски, без фото.
+Here you draw on top of the BEV. **The drawings are semi-transparent** —
+the photo shows through so you can orient yourself. On export only the
+masks remain, without the photo.
 
-**Корисні дії скрізь:**
-- `Ctrl + колесо миші` — зум фрагмента (як у графічних редакторах)
-- `Ctrl + ЛКМ` або `середня кнопка миші` — переміщення (pan)
-- `Очистити` — скинути до стартового стану
+**Useful actions everywhere:**
 
-#### 3a. Маска парковки
+- `Ctrl + mouse wheel` — zoom in on a region (like in graphics editors)
+- `Ctrl + LMB` or `middle mouse button` — pan
+- `Clear` — reset to the starting state
 
-Малюєш де паркуватися **можна**, а де **ні** (газон, виїзд, тротуар).
+#### 3a. Parking mask
 
-- **ЛКМ** — зелений (дозволено)
-- **ПКМ** — червоний (заборонено)
-- На експорті зелене стає білим, червоне — чорним
+You draw where parking **is** allowed and where it **isn't** (lawn, exit,
+sidewalk).
 
-Стартовий стан — **усе дозволено** (зелений). Зазвичай зручніше відмалювати лише заборонені зони ПКМ.
+- **LMB** — green (allowed)
+- **RMB** — red (forbidden)
+- On export, green becomes white and red becomes black
 
-#### 3b. Маска орієнтації
+The starting state is **everything allowed** (green). It's usually easier
+to just paint the forbidden zones with RMB.
 
-Це підказує системі **як саме машини стоять** у різних частинах парковки.
+#### 3b. Orientation mask
 
-- **ЛКМ** — зелений (паралельне паркування, машини стоять боком до проїзду)
-- **ПКМ** — синій (перпендикулярне, машини стоять "хвостом")
-- **Стирач** — зняти зону
+This tells the system **how cars are parked** in different parts of the lot.
 
-Стартовий стан — нічого не позначено. Можна не зафарбовувати всю карту, лише ті зони, де орієнтація важлива.
+- **LMB** — green (parallel parking, cars side-on to the lane)
+- **RMB** — blue (perpendicular, cars parked tail-in)
+- **Eraser** — remove a zone
 
-#### 3c. Карта парковки
+The starting state is nothing marked. You don't have to paint the whole
+map, only the zones where orientation matters.
 
-Це **візуальне** позначення меж парковки/секцій для подальшого використання у фронтенді. На детекцію **не впливає** — це опціональний крок.
+#### 3c. Parking map
 
-- Режим **Додати**: клік — нова вершина полігона, `Enter` або подвійний клік — замкнути полігон, `Esc` — скасувати
-- Режим **Редагувати**: тягни вершину, `Shift+клік` на ребрі — вставити нову вершину, `Delete` — видалити
+This is a **visual** outline of the lot/section boundaries for later use in
+the frontend. It does **not affect** detection — this step is optional.
 
-Клацання поза межами BEV (за межами синьої рамки) не дозволені.
+- **Add** mode: click — new polygon vertex, `Enter` or double-click —
+  close the polygon, `Esc` — cancel
+- **Edit** mode: drag a vertex, `Shift+click` on an edge — insert a new
+  vertex, `Delete` — remove
 
-### 4. Експорт
+Clicks outside the BEV bounds (outside the blue frame) are not allowed.
 
-Перевір чек-лист (що зроблено, що ні) і натисни **Завантажити ZIP**. Отримаєш файл `parking_config.zip` з усім потрібним.
+### 4. Export
+
+Review the checklist (what's done, what isn't) and click **Download ZIP**.
+You'll get a `parking_config.zip` with everything you need.
 
 ---
 
-## Як використати результат
+## How to use the result
 
-Найпростіший шлях — скрипт у головному проєкті, який сам розпакує архів і змерджить `.env`:
+The simplest path is the script in the main project, which unpacks the
+archive and merges the `.env` for you:
 
 ```bash
 python scripts/apply_config.py path/to/parking_config.zip
 ```
 
-Додай `--dry-run` щоб подивитися що зміниться, нічого не записуючи. Скрипт:
-- замінює у твоєму `.env` лише ті ключі, що є у бандлі (інші коментарі/змінні не чіпає),
-- кладе маски/SVG у `assets/`,
-- виводить список того, що змінилося.
+Add `--dry-run` to preview the changes without writing anything. The
+script:
 
-**Або вручну:** розпакуй `parking_config.zip` у корінь основного репозиторію — файли стануть на потрібні місця:
+- replaces only the keys in your `.env` that are present in the bundle
+  (other comments/variables are left untouched),
+- places the masks/SVG into `assets/`,
+- prints a list of what changed.
+
+**Or by hand:** unzip `parking_config.zip` into the root of the main
+repository — the files land in the right places:
 
 ```
 parking_config.zip
-├── .env                              ← конфігурація камери та BEV
+├── .env                              ← camera and BEV configuration
 └── assets/
-    ├── parking_mask.png              ← маска дозволених зон
-    ├── orientation_zones.png         ← маска орієнтації
-    └── parking_map.svg               ← карта (для фронтенду, опціонально)
+    ├── parking_mask.png              ← allowed-zones mask
+    ├── orientation_zones.png         ← orientation mask
+    └── parking_map.svg               ← map (for the frontend, optional)
 ```
 
-Якщо у тебе вже є `.env` — підмерджи `CAMERA_URL`, `SRC_POINTS`, `BEV_WIDTH`, `BEV_HEIGHT` у твій файл руками.
+If you already have a `.env`, merge `CAMERA_URL`, `SRC_POINTS`,
+`BEV_WIDTH`, `BEV_HEIGHT` into your file by hand.
 
-Запусти головну програму (`python monitor.py` або `docker compose up`) — вона підхопить нові налаштування автоматично. Жодних правок у `config.py` робити не потрібно: всі змінні з `.env` мають пріоритет над defaults.
+Run the main program (`python monitor.py` or `docker compose up`) — it
+picks up the new settings automatically. No edits to `config.py` are
+needed: every variable from `.env` takes priority over the defaults.
 
 ---
 
-## Часті питання
+## FAQ
 
-**Можна закрити вкладку і повернутися?**
-Так. Прогрес зберігається на диск автоматично у каталозі `.parking_configurator_cache/` (з'являється там, звідки запускаєш). При наступному старті вгорі буде кнопка "Почати з нуля", якщо хочеш скинути.
+**Can I close the tab and come back?**
+Yes. Progress is saved to disk automatically in the
+`.parking_configurator_cache/` directory (it appears wherever you launch
+from). On the next start there's a "Start from scratch" button at the top
+if you want to reset.
 
-**На якому порту запускається?**
-За замовчуванням `8765`. Змінити: `python -m parking_configurator --port 9000`.
+**Which port does it run on?**
+`8765` by default. To change it: `python -m parking_configurator --port 9000`.
 
-**Чи можна запустити без браузера?**
-Так: `python -m parking_configurator --no-browser` — і потім сам відкриваєш потрібну сторінку.
+**Can I run it without a browser?**
+Yes: `python -m parking_configurator --no-browser` — then open the page
+yourself.
 
-**Працює тільки локально чи можна задеплоїти?**
-Тільки локально. Це **інструмент для одноразового налаштування** перед деплоєм основної системи, а не сервіс для постійного використання.
+**Is it local-only, or can I deploy it?**
+Local only. This is a **one-time setup tool** to run before deploying the
+main system, not a service for continuous use.
 
-**Чи можна повторно налаштувати парковку?**
-Так. Запусти знову `python -m parking_configurator`, пройди кроки заново (можна почати з `--fresh` щоб не плутатися зі старими даними), завантаж новий ZIP і замінь файли у проєкті.
+**Can I reconfigure the lot later?**
+Yes. Run `python -m parking_configurator` again and redo the steps (you can
+start with `--fresh` to avoid confusion with old data), download a new ZIP
+and replace the files in the project.
